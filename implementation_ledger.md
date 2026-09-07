@@ -4,7 +4,7 @@
 |-------|--------|
 | Goal | Replace CheckMK with Beszel for host + Docker monitoring |
 | Plan | [plan.md](./plan.md) |
-| Last updated | 2026-09-07 |
+| Last updated | 2026-09-07 (P1-01) |
 | Status legend | `planned` · `in_progress` · `done` · `blocked` · `cancelled` |
 | Scope boundary | **This bootstrap only:** directory + `plan.md` + this ledger. All Phase 1+ work is resumed **from inside `/opt/docker/beszel`** (open that project / chat there). |
 
@@ -31,11 +31,11 @@ Rules:
 
 ## Phase 1 — Stand up Beszel (parallel with CheckMK)
 
-Resume from `/opt/docker/beszel`. Next task to pick up: **P1-01**.
+Resume from `/opt/docker/beszel`. Next task to pick up: **P1-02**.
 
 | ID | Task | Status | Evidence / test notes | Blocked-by |
 |----|------|--------|----------------------|------------|
-| P1-01 | Init git repo / README for `/opt/docker/beszel` (homelab project conventions) | planned | | |
+| P1-01 | Init git repo / README for `/opt/docker/beszel` (homelab project conventions) | done | Git already present (`origin` → `Enucatl/docker-beszel`). Expanded README (plan/ledger links, target stack, deploy stub, security-baseline note); added `.gitignore` (`.env`/`*.swp`/`secrets`) and MIT `LICENSE` to match peer stacks | |
 | P1-02 | Add `docker-compose.yml`: hub + local agent (unix socket), `traefik_proxy`, security-baseline limits, pinned images | planned | Mirror patterns from `/opt/docker/checkmk/docker-compose.yml` and Beszel same-host socket docs | |
 | P1-03 | Traefik labels: `beszel.${DOCKER_DOMAIN}`, HTTPS, Authelia + `secured@file`, correct hub port | planned | | P1-02 |
 | P1-04 | Decide agent→hub path if Authelia blocks WebSocket/API (split router vs internal URL) | planned | Record chosen approach here after first agent connect attempt | P1-03 |
@@ -91,6 +91,7 @@ Resume from `/opt/docker/beszel`. Next task to pick up: **P1-01**.
 | 2026-09-07 | Bootstrap complete (dir + plan + ledger). Phase 1+ resumes from this directory; next pick-up **P1-01**. |
 | 2026-09-07 | Router SNMP dropped for v1; Podman agent optional (OPT-01). Total outage alerts need OPT-02. |
 | 2026-09-07 | Risk: Authelia may interfere with agent `HUB_URL` on public hostname — resolve under P1-04. |
+| 2026-09-07 | P1-01: repo init already done before ledger work; README/gitignore/LICENSE brought in line with checkmk/grafana-loki peers. Next: **P1-02**. |
 
 ---
 
@@ -100,3 +101,4 @@ Resume from `/opt/docker/beszel`. Next task to pick up: **P1-01**.
 |------|--------|
 | 2026-09-07 | Ledger created; P0-01…P0-03 marked done; remaining tasks seeded as planned. |
 | 2026-09-07 | Scope clarified: bootstrap = scaffold + markdown only; P0-04 done; Phase 1+ deferred to beszel workspace. |
+| 2026-09-07 | P1-01 done: README + `.gitignore` + `LICENSE`; next pick-up **P1-02**. |

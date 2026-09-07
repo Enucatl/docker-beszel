@@ -68,7 +68,7 @@ flowchart LR
 1. Create `/opt/docker/beszel/`.
 2. Write this `plan.md`.
 3. Write `implementation_ledger.md` seeded with tasks.
-4. **Stop here.** Bootstrap scope is only the directory scaffold and these markdown files. All Phase 1+ implementation is resumed **from inside `/opt/docker/beszel`**, driven by the ledger (next: P1-01).
+4. **Stop here.** Bootstrap scope is only the directory scaffold and these markdown files. All Phase 1+ implementation is resumed **from inside `/opt/docker/beszel`**, driven by the ledger (next after P1-01: **P1-02**).
 
 ### Phase 1 — Stand up Beszel (parallel with CheckMK)
 
