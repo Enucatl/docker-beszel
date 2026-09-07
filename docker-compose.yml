@@ -8,7 +8,7 @@ services:
     environment:
       APP_URL: https://beszel.${DOCKER_DOMAIN}
     # Loopback-only publish so the host-network agent can reach the hub without
-    # Traefik/Authelia (public UI stays on traefik_proxy; labels land in P1-03).
+    # Traefik/Authelia (public UI is via traefik_proxy labels below).
     ports:
       - "127.0.0.1:8090:8090"
     expose:
@@ -20,7 +20,15 @@ services:
       - /tmp:rw,noexec,nosuid,size=64m
     networks:
       - traefik_proxy
-    # Traefik / Authelia labels: P1-03
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_proxy"
+      - "traefik.http.routers.beszel.rule=Host(`beszel.${DOCKER_DOMAIN}`)"
+      - "traefik.http.routers.beszel.entrypoints=https"
+      - "traefik.http.routers.beszel.tls=true"
+      - "traefik.http.routers.beszel.middlewares=authelia@docker,secured@file"
+      - "traefik.http.routers.beszel.service=beszel"
+      - "traefik.http.services.beszel.loadbalancer.server.port=8090"
 
   beszel-agent:
     extends:

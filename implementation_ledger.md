@@ -4,7 +4,7 @@
 |-------|--------|
 | Goal | Replace CheckMK with Beszel for host + Docker monitoring |
 | Plan | [plan.md](./plan.md) |
-| Last updated | 2026-09-07 (P1-02) |
+| Last updated | 2026-09-07 (P1-03) |
 | Status legend | `planned` · `in_progress` · `done` · `blocked` · `cancelled` |
 | Scope boundary | **This bootstrap only:** directory + `plan.md` + this ledger. All Phase 1+ work is resumed **from inside `/opt/docker/beszel`** (open that project / chat there). |
 
@@ -31,14 +31,14 @@ Rules:
 
 ## Phase 1 — Stand up Beszel (parallel with CheckMK)
 
-Resume from `/opt/docker/beszel`. Next task to pick up: **P1-03**.
+Resume from `/opt/docker/beszel`. Next task to pick up: **P1-05** (P1-04 waits on first remote-agent connect; local path already decided).
 
 | ID | Task | Status | Evidence / test notes | Blocked-by |
 |----|------|--------|----------------------|------------|
 | P1-01 | Init git repo / README for `/opt/docker/beszel` (homelab project conventions) | done | Git already present (`origin` → `Enucatl/docker-beszel`). Expanded README (plan/ledger links, target stack, deploy stub, security-baseline note); added `.gitignore` (`.env`/`*.swp`/`secrets`) and MIT `LICENSE` to match peer stacks | |
 | P1-02 | Add `docker-compose.yml`: hub + local agent (unix socket), `traefik_proxy`, security-baseline limits, pinned images | done | `henrygd/beszel:0.19.0` + `henrygd/beszel-agent:0.19.0`; hub `hardened-small`, agent `hardened-tiny`; shared `beszel_socket` volume; agent `LISTEN=/beszel_socket/beszel.sock`, `HUB_URL=http://127.0.0.1:8090`, hub bind `127.0.0.1:8090:8090`; `traefik_proxy` on hub; `.env` / `.env.example` with `COMPOSE_ENV_FILES=../.env`. Validated: `docker compose config` → `APP_URL=https://beszel.docker.home.arpa` | |
-| P1-03 | Traefik labels: `beszel.${DOCKER_DOMAIN}`, HTTPS, Authelia + `secured@file`, correct hub port | planned | Hub port 8090 (already `expose`d) | P1-02 |
-| P1-04 | Decide agent→hub path if Authelia blocks WebSocket/API (split router vs internal URL) | planned | Local agent already bypasses Authelia via loopback `HUB_URL`. This task mainly for **remote** agents on forbearance/proxmox | P1-03 |
+| P1-03 | Traefik labels: `beszel.${DOCKER_DOMAIN}`, HTTPS, Authelia + `secured@file`, correct hub port | done | Labels on hub: Host `beszel.${DOCKER_DOMAIN}`, entrypoint `https`, TLS, middlewares `authelia@docker,secured@file`, service port `8090`, `traefik.docker.network=traefik_proxy`. Validated via `docker compose config` | |
+| P1-04 | Decide agent→hub path if Authelia blocks WebSocket/API (split router vs internal URL) | planned | Local agent already bypasses Authelia via loopback `HUB_URL`. Record remote-agent approach after first forbearance/proxmox connect | P1-07 or P1-08 |
 | P1-05 | Bring stack up; create admin user; UI reachable via Traefik | planned | | P1-03 |
 | P1-06 | Register `docker.home.arpa`; confirm host metrics + Docker container list | planned | Expect containers currently tagged `checkmk_monitor=true` to appear via docker.sock (Beszel monitors all containers unless filtered) | P1-05 |
 | P1-07 | Install agent on `forbearance.home.arpa`; system green in hub | planned | Binary or container; `HUB_URL` / `KEY` / `TOKEN` | P1-05 |
@@ -93,6 +93,7 @@ Resume from `/opt/docker/beszel`. Next task to pick up: **P1-03**.
 | 2026-09-07 | Risk: Authelia may interfere with agent `HUB_URL` on public hostname — resolve under P1-04. |
 | 2026-09-07 | P1-01: repo init already done before ledger work; README/gitignore/LICENSE brought in line with checkmk/grafana-loki peers. Next: **P1-02**. |
 | 2026-09-07 | P1-02: pinned 0.19.0; local agent uses unix socket + loopback hub port so Authelia is not on the local registration path. Remote-agent Authelia question remains under P1-04. Next: **P1-03**. |
+| 2026-09-07 | P1-03: Traefik labels added (Authelia + secured@file, port 8090). P1-04 re-blocked on first remote agent (P1-07/P1-08); next pick-up **P1-05**. |
 
 ---
 
@@ -104,3 +105,4 @@ Resume from `/opt/docker/beszel`. Next task to pick up: **P1-03**.
 | 2026-09-07 | Scope clarified: bootstrap = scaffold + markdown only; P0-04 done; Phase 1+ deferred to beszel workspace. |
 | 2026-09-07 | P1-01 done: README + `.gitignore` + `LICENSE`; next pick-up **P1-02**. |
 | 2026-09-07 | P1-02 done: compose hub+agent, baseline, pin 0.19.0, traefik_proxy; next pick-up **P1-03**. |
+| 2026-09-07 | P1-03 done: Traefik/Authelia labels on hub; P1-04 deferred to remote-agent connect; next **P1-05**. |

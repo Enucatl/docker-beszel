@@ -11,7 +11,7 @@ Working docs:
 ## Stack
 
 - **Beszel hub** (`henrygd/beszel:0.19.0`) — UI, history, alerts; Traefik
-  `beszel.${DOCKER_DOMAIN}` + Authelia (labels: ledger **P1-03**)
+  `beszel.${DOCKER_DOMAIN}` + Authelia + `secured@file`
 - **Local agent** (`henrygd/beszel-agent:0.19.0`) on `docker.home.arpa` — unix
   socket to hub; read-only Docker socket for container metrics
 - **Remote agents** on `forbearance.home.arpa` and `proxmox.home.arpa` (later)
@@ -26,7 +26,7 @@ Copy `.env.example` to `.env` (or keep the project `.env` that sets
 docker compose up -d
 ```
 
-- Public UI (after P1-03): `https://beszel.<DOCKER_DOMAIN>` (behind Authelia)
+- Public UI: `https://beszel.<DOCKER_DOMAIN>` (behind Authelia)
 - Local agent hub URL: `http://127.0.0.1:8090` (loopback publish only)
 - When adding the docker host in the UI, use Host/IP:
   `/beszel_socket/beszel.sock`
