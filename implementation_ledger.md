@@ -6,7 +6,7 @@
 | Plan | [plan.md](./plan.md) |
 | Last updated | 2026-09-08 |
 | Status legend | `planned` · `in_progress` · `done` · `blocked` · `cancelled` |
-| Next pick-up | **P3-02** |
+| Next pick-up | **P3-03** |
 
 **v1 target (authoritative with [plan.md](./plan.md)):**
 
@@ -76,7 +76,7 @@ Rules:
 | ID | Task | Status | Evidence / test notes | Blocked-by |
 |----|------|--------|----------------------|------------|
 | P3-01 | `docker compose down` CheckMK; stop/remove `checkmk-deploy` units | done | `docker compose stop` → container Exited. `systemctl disable --now checkmk-deploy.path checkmk-refresh.timer` needs sudo (pending on host). Units still enabled until that runs | P2-02 |
-| P3-02 | Puppet: add `beszel: {}`, remove/absent `checkmk` in `git_deploy_projects` | planned | `puppet-control-repo/data/nodes/docker.yaml` | P3-01 |
+| P3-02 | Puppet: add `beszel: {}`, remove/absent `checkmk` in `git_deploy_projects` | done | `checkmk: { ensure: absent }`, `beszel: {}` in `docker.yaml`. Also stripped `checkmk_monitor` labels, deleted `enroll-checkmk.sh`, cleaned Proxmox cloud-init/desktop scripts, renamed VyOS SNMP `checkmk_group` → `ro_group` | P3-01 |
 | P3-03 | Add beszel systemd **hub** path/service deploy units (mirror checkmk `*-deploy`); agent unit is `profile::beszel_agent` (P1-06+) | planned | | P1-02 |
 | P3-04 | Remove Traefik `checkmk:` entrypoint `:8000` | planned | | P3-01 |
 | P3-05 | Uninstall CheckMK agents / bakery on docker, forbearance, proxmox | planned | Leave FreeIPA `beszel` (Beszel agent identity) | P3-01 |
@@ -134,3 +134,4 @@ Rules:
 | 2026-09-08 | OPT-03: Authelia OIDC SSO for Beszel (Grafana pattern); password login disabled. |
 | 2026-09-08 | OIDC fix: Authelia `consent_mode: implicit`; hub mounts host CA + `SSL_CERT_FILE` for Authelia HTTPS. |
 | 2026-09-08 | Cutover: CheckMK stopped; P1-11 cancelled; P2-01/P2-02/P3-01 done. Next **P3-02** (Puppet absent checkmk / add beszel deploy). |
+| 2026-09-08 | P3-02 done: Puppet CheckMK residuals removed; beszel git_deploy added. Next **P3-03**. |
