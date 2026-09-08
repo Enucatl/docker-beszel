@@ -11,6 +11,13 @@ services:
       SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
     expose:
       - "8090"
+    # Distroless image: use built-in health CMD (hits /api/health). Prefer ≥60s interval.
+    healthcheck:
+      test: ["CMD", "/beszel", "health", "--url", "http://localhost:8090"]
+      interval: 120s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     volumes:
       - beszel_data:/beszel_data
       # Trust FreeIPA/homelab CA so hub can call Authelia OIDC token/userinfo over HTTPS
