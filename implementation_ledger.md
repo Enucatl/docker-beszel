@@ -6,7 +6,7 @@
 | Plan | [plan.md](./plan.md) |
 | Last updated | 2026-09-08 |
 | Status legend | `planned` · `in_progress` · `done` · `blocked` · `cancelled` |
-| Next pick-up | **P1-08** |
+| Next pick-up | **P3-02** |
 
 **v1 target (authoritative with [plan.md](./plan.md)):**
 
@@ -19,8 +19,8 @@
   `/var/run/docker.sock` (`beszel` ∈ local `docker` group). No Beszel socket-proxy.
 - **Uniform HUB_URL** for all hosts: `https://beszel-agent.${DOCKER_DOMAIN}`
   (Traefik path `/api/beszel/agent-connect` only; `secured@file` LAN allowlist; **no**
-  Authelia). UI remains `https://beszel.${DOCKER_DOMAIN}` behind Authelia.
-- Agent KEY/TOKEN in Vault (`profile::beszel_agent::key` / `::token`).
+  Authelia). UI: `https://beszel.${DOCKER_DOMAIN}` + `secured@file` + Authelia OIDC.
+- Agent KEY/TOKEN in Vault (`profile::beszel_agent::key` / `::token`); universal token **permanent**.
 
 Rules:
 
@@ -53,10 +53,10 @@ Rules:
 | P1-05 | Bring stack up; create admin user; UI reachable via Traefik | done | Hub Up; admin `admin@docker.home.arpa` (`secrets/beszel_admin_password`). Health 200 loopback + `traefik_proxy`; public HTTPS → 403 Authelia (same as checkmk without session) | P1-03 |
 | P1-06 | Puppet: FreeIPA `beszel` + `profile::beszel_agent` on `docker.home.arpa`; host + container metrics green under systemd | done | `puppet agent -t` applied `2de92bf`. `beszel-agent.service` **active** as User=`beszel` (groups `beszel,docker`). Health `ok`. Hub: `docker.home.arpa` **up** v0.19.0; **48** containers. Smoke nohup agent stopped | P1-05 |
 | P1-07 | Puppet: `profile::beszel_agent` on `forbearance.home.arpa` as FreeIPA `beszel`; system green | done | After token refresh + Puppet re-apply: `forbearance.home.arpa` **up** v0.19.0. Both agents use `https://beszel-agent.docker.home.arpa`. Removed stale duplicate `docker.home.arpa` (down) | P1-04 |
-| P1-08 | Puppet: `profile::beszel_agent` on `proxmox.home.arpa` as FreeIPA `beszel`; system green | in_progress | Class added to `data/nodes/proxmox.yaml`; await Puppet apply | P1-04 |
-| P1-09 | Shoutrrr Telegram URL; test notification | planned | Reuse CheckMK bot/chat if available | P1-05 |
-| P1-10 | Conservative alerts (host down, high CPU/mem/disk) | planned | Prefer less noise than CheckMK SSL/label churn | P1-09 |
-| P1-11 | Parallel-run soak vs CheckMK; note gaps | planned | | P1-06, P1-07, P1-08, P1-10 |
+| P1-08 | Puppet: `profile::beszel_agent` on `proxmox.home.arpa` as FreeIPA `beszel`; system green | done | Catalog `6cb17efffbb`; `beszel-agent` **active**; hub `proxmox.home.arpa` **up** v0.19.0. Cleaned token-rotation duplicate down systems. All 3 hosts green | P1-04 |
+| P1-09 | Shoutrrr Telegram URL; test notification | done | Reused CheckMK `telegram.sh` params (bot `@enucatlcheckmkbot`, chat id from WATO `notification_parameter.mk`). Saved in hub `user_settings.webhooks` + gitignored `secrets/beszel_telegram_shoutrrr`. `POST /api/beszel/test-notification` → `err: false` | P1-05 |
+| P1-10 | Conservative alerts (host down, high CPU/mem/disk) | done | Via `POST /api/beszel/user-alerts`: **Status** on docker+proxmox only (not forbearance); **CPU** 90%/10m; **Memory** 95%/10m; **Disk** 95%/5m on all 3; **Temperature** 70°C/5m on proxmox; **ContainerHealth** on docker only (expect noise from unhealthy `checkmk` until cutover) | P1-09 |
+| P1-11 | Parallel-run soak vs CheckMK; note gaps | cancelled | Skipped formal soak; user proceeded to cutover after SSO + alerts green | P1-06, P1-07, P1-08, P1-10 |
 | P1-12 | Remove compose agent sidecar; hub-only compose | done | Compose agent removed; binary-agent model chosen (CheckMK-like) | |
 | P1-13 | Beszel compose Docker socket-proxy for agent | cancelled | Bare-metal agent uses host `docker.sock`; proxy is for container consumers (Traefik only). Removed from compose | |
 
@@ -66,8 +66,8 @@ Rules:
 
 | ID | Task | Status | Evidence / test notes | Blocked-by |
 |----|------|--------|----------------------|------------|
-| P2-01 | Mute or disable CheckMK Telegram notifications | planned | Beszel is primary alert path | P1-11 |
-| P2-02 | Stop day-to-day use of CheckMK UI; Beszel as source of truth | planned | | P2-01 |
+| P2-01 | Mute or disable CheckMK Telegram notifications | done | CheckMK stack stopped (`docker compose stop`); deploy path + refresh timer disabled so it stays down | P1-11 |
+| P2-02 | Stop day-to-day use of CheckMK UI; Beszel as source of truth | done | Beszel SSO + alerts live; CheckMK containers stopped | P2-01 |
 
 ---
 
@@ -75,7 +75,7 @@ Rules:
 
 | ID | Task | Status | Evidence / test notes | Blocked-by |
 |----|------|--------|----------------------|------------|
-| P3-01 | `docker compose down` CheckMK; stop/remove `checkmk-deploy` units | planned | | P2-02 |
+| P3-01 | `docker compose down` CheckMK; stop/remove `checkmk-deploy` units | done | `docker compose stop`; `systemctl disable --now checkmk-deploy.path checkmk-refresh.timer`. Full `down`/unit removal + Puppet absent still open as P3-02+ | P2-02 |
 | P3-02 | Puppet: add `beszel: {}`, remove/absent `checkmk` in `git_deploy_projects` | planned | `puppet-control-repo/data/nodes/docker.yaml` | P3-01 |
 | P3-03 | Add beszel systemd **hub** path/service deploy units (mirror checkmk `*-deploy`); agent unit is `profile::beszel_agent` (P1-06+) | planned | | P1-02 |
 | P3-04 | Remove Traefik `checkmk:` entrypoint `:8000` | planned | | P3-01 |
@@ -93,7 +93,7 @@ Rules:
 |----|------|--------|----------------------|------------|
 | OPT-01 | VyOS Podman Beszel agent | planned | Host health only; not SNMP replacement | P1-11 |
 | OPT-02 | External uptime probe for WAN / dead-router visibility | planned | Only path when LAN egress is dead | |
-| OPT-03 | Authelia OIDC for Beszel (mirror Grafana) | planned | | P1-05 |
+| OPT-03 | Authelia OIDC for Beszel (mirror Grafana) | done | Authelia client `beszel` + claims_policy; UI Traefik `secured@file` only (no forward-auth); PocketBase OAuth2 `oidc` → Authelia; password auth disabled; admin user email = FreeIPA `user@home.arpa`. Secrets: `authelia/secrets/oidc_beszel_client_secret_digest`, `beszel/secrets/oidc_client_secret`. Puppet ACL for digest in `docker.yaml` | |
 
 ---
 
@@ -109,6 +109,8 @@ Rules:
 | 2026-09-07 | Hub image pinned `henrygd/beszel:0.19.0`; admin `admin@docker.home.arpa` (password in gitignored `secrets/`). |
 | 2026-09-07 | Agent install/systemd only via puppet-control-repo (`profile::beszel_agent`); no ad-hoc host `systemctl`. KEY/TOKEN in Vault. |
 | 2026-09-08 | Agent runs as FreeIPA `beszel` (`nologin` via `freeipa_users`); docker group only on docker host. Not root / not `user_l` / not `get.beszel.dev`. |
+| 2026-09-08 | No Status (host-down) alert on `forbearance` — intermittent downtime is expected. |
+| 2026-09-08 | Beszel UI auth = Authelia OIDC (like Grafana); not Traefik forward-auth. FreeIPA `user@home.arpa` is the hub admin. |
 
 ---
 
@@ -125,3 +127,10 @@ Rules:
 | 2026-09-08 | P1-06 done: systemd agent on docker as `beszel`; hub green with containers. |
 | 2026-09-08 | P1-04 done: agent hostname split; uniform HUB_URL. Next **P1-07**. |
 | 2026-09-08 | P1-07 done (forbearance up). P1-08 proxmox in progress. |
+| 2026-09-08 | P1-08 done; all three hosts up. Universal token set permanent. Next **P1-09** (Telegram). |
+| 2026-09-08 | P1-09 done: CheckMK Telegram bot/chat → Beszel Shoutrrr; test notify OK. Next **P1-10** (alerts). |
+| 2026-09-08 | P1-10 done: Status + CPU/Mem/Disk alerts on all hosts. Next **P1-11** (soak vs CheckMK). |
+| 2026-09-08 | Removed Status alert from forbearance (host expected to be down at times). |
+| 2026-09-08 | OPT-03: Authelia OIDC SSO for Beszel (Grafana pattern); password login disabled. |
+| 2026-09-08 | OIDC fix: Authelia `consent_mode: implicit`; hub mounts host CA + `SSL_CERT_FILE` for Authelia HTTPS. |
+| 2026-09-08 | Cutover: CheckMK stopped; P1-11 cancelled; P2-01/P2-02/P3-01 done. Next **P3-02** (Puppet absent checkmk / add beszel deploy). |

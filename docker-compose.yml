@@ -7,10 +7,14 @@ services:
     cpu_shares: 128
     environment:
       APP_URL: https://beszel.${DOCKER_DOMAIN}
+      # Ensure Go trusts the mounted homelab CA when calling Authelia OIDC
+      SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
     expose:
       - "8090"
     volumes:
       - beszel_data:/beszel_data
+      # Trust FreeIPA/homelab CA so hub can call Authelia OIDC token/userinfo over HTTPS
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=64m
     networks:
@@ -18,11 +22,11 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik_proxy"
-      # Human UI — Authelia + LAN allowlist
+      # Human UI — LAN allowlist + Authelia OIDC (app SSO, same pattern as Grafana)
       - "traefik.http.routers.beszel.rule=Host(`beszel.${DOCKER_DOMAIN}`)"
       - "traefik.http.routers.beszel.entrypoints=https"
       - "traefik.http.routers.beszel.tls=true"
-      - "traefik.http.routers.beszel.middlewares=authelia@docker,secured@file"
+      - "traefik.http.routers.beszel.middlewares=secured@file"
       - "traefik.http.routers.beszel.service=beszel"
       # Agents (all hosts, including docker) — no Authelia; path-limited; LAN allowlist only
       - "traefik.http.routers.beszel-agent.rule=Host(`beszel-agent.${DOCKER_DOMAIN}`) && PathPrefix(`/api/beszel/agent-connect`)"

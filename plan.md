@@ -72,7 +72,8 @@ flowchart LR
   Docker socket directly (`unix:///var/run/docker.sock`). FreeIPA `beszel` is in the
   local `docker` group on that host only. A compose socket-proxy is for container
   consumers (Traefik); it is unnecessary for a host agent.
-- **Auth:** local admin first; optional Authelia OIDC later (Grafana already uses Authelia OIDC).
+- **Auth:** Authelia OIDC SSO (same pattern as Grafana; FreeIPA users). Traefik
+  UI = `secured@file` only. Agents: KEY/TOKEN on `beszel-agent` hostname.
 - **Alerts:** Shoutrrr Telegram URL in Beszel settings (reuse existing bot/chat where possible).
 - **Puppet:** `profile::beszel_agent` installs the pinned binary and
   `beszel-agent.service` (User=`beszel`); KEY/TOKEN in Vault. Later add

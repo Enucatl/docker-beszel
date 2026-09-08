@@ -11,13 +11,17 @@ Working docs:
 ## Stack
 
 - **Beszel hub** (`henrygd/beszel:0.19.0`) — UI, history, alerts; Traefik
-  `beszel.${DOCKER_DOMAIN}` + Authelia + `secured@file`
+  `beszel.${DOCKER_DOMAIN}` + `secured@file` + Authelia OIDC (Grafana-style SSO)
 - **Binary agents** on all monitored hosts (`docker`, `forbearance`, `proxmox`) —
   Puppet `profile::beszel_agent` + systemd as FreeIPA user `beszel` (`nologin`).
   On `docker.home.arpa` the agent is in the local `docker` group and reads
   `/var/run/docker.sock` directly (no compose socket-proxy; Traefik’s proxy is
   for containers, not bare-metal agents)
-- **Alerts** — Telegram via Shoutrrr (later)
+- **Alerts** — Telegram via Shoutrrr (same CheckMK bot/chat; URL in
+  `secrets/beszel_telegram_shoutrrr` and hub Settings → Notifications).
+  Rules: Status (down) on docker+proxmox only (not forbearance); CPU 90% /
+  10m; Memory 95% / 10m; Disk 95% / 5m on all hosts; Temperature 70°C / 5m on
+  proxmox; ContainerHealth on docker (Docker unhealthy status)
 
 ## Deployment
 
@@ -28,12 +32,15 @@ Copy `.env.example` to `.env` (or keep the project `.env` that sets
 docker compose up -d
 ```
 
-- Public UI: `https://beszel.<DOCKER_DOMAIN>` (behind Authelia)
+- Public UI: `https://beszel.<DOCKER_DOMAIN>` (LAN allowlist + Authelia OIDC SSO)
 - Agent `HUB_URL` (all hosts): `https://beszel-agent.<DOCKER_DOMAIN>`
   (Traefik: agent-connect path only; LAN allowlist; no Authelia)
 - Docker host agent: default Docker socket (`unix:///var/run/docker.sock`)
-- Local admin: `admin@docker.home.arpa` (password in
-  `secrets/beszel_admin_password`, gitignored)
+- Hub admin: FreeIPA `user@home.arpa` via Authelia OIDC (password login
+  disabled). PocketBase superuser break-glass:
+  `admin@docker.home.arpa` + `secrets/beszel_admin_password` (gitignored).
+  OIDC client secret: `secrets/oidc_client_secret` (Authelia digest under
+  `/opt/docker/authelia/secrets/oidc_beszel_client_secret_digest`).
 
 ## Binary agent (Puppet)
 
