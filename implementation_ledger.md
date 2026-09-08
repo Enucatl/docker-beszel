@@ -81,7 +81,7 @@ Rules:
 | P3-03 | Add beszel systemd **hub** path/service deploy units (mirror checkmk `*-deploy`); agent unit is `profile::beszel_agent` (P1-06+) | planned | | P1-02 |
 | P3-04 | Remove Traefik `checkmk:` entrypoint `:8000` | planned | | P3-01 |
 | P3-05 | Uninstall CheckMK agents / bakery on docker, forbearance, proxmox | planned | Leave FreeIPA `beszel` (Beszel agent identity) | P3-01 |
-| P3-06 | Optional: strip `checkmk_monitor` / `checkmk_agent` labels | planned | | P3-01 |
+| P3-06 | Optional: strip `checkmk_monitor` / `checkmk_agent` labels | done | Removed leftover `checkmk_monitor` labels from all docker-compose stacks under `/opt/docker` (no `checkmk_agent` labels remained) | P3-01 |
 | P3-07 | Remove Vault `checkmk::agent_registration_password`; Authelia cleanup if any | planned | Keep `profile::beszel_agent::{key,token}` | P3-05 |
 | P3-08 | Archive/delete checkmk volume after confirming RRD history not needed | planned | No import into Beszel | P3-01 |
 | P3-09 | Verify success criteria | planned | `docker stats`, hub UI, alert test | P3-01…P3-08 |
@@ -139,3 +139,4 @@ Rules:
 | 2026-09-08 | Cutover: CheckMK stopped; P1-11 cancelled; P2-01/P2-02/P3-01 done. Next **P3-02** (Puppet absent checkmk / add beszel deploy). |
 | 2026-09-08 | P3-02 done: Puppet CheckMK residuals removed; beszel git_deploy added. Next **P3-03**. |
 | 2026-09-08 | Enrolled `proxmox-cortex` + `complex`; moved agent class to `os/Debian.yaml` (`bc5bd0f`). |
+| 2026-09-08 | P3-06 done: stripped leftover `checkmk_monitor` labels from compose stacks. |
