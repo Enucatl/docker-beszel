@@ -29,7 +29,8 @@ docker compose up -d
 ```
 
 - Public UI: `https://beszel.<DOCKER_DOMAIN>` (behind Authelia)
-- Same-host agent `HUB_URL`: `http://127.0.0.1:8090` (loopback publish only)
+- Agent `HUB_URL` (all hosts): `https://beszel-agent.<DOCKER_DOMAIN>`
+  (Traefik: agent-connect path only; LAN allowlist; no Authelia)
 - Docker host agent: default Docker socket (`unix:///var/run/docker.sock`)
 - Local admin: `admin@docker.home.arpa` (password in
   `secrets/beszel_admin_password`, gitignored)
@@ -45,15 +46,14 @@ conflicts with FreeIPA). Use `profile::beszel_agent` in
    `freeipa_users::user_groups` adds `beszel` to `docker`.
 2. Hub KEY + universal TOKEN → Vault `kv/puppet` as
    `profile::beszel_agent::key` / `profile::beszel_agent::token`
-3. Per-node Hiera: `hub_url`, `system_name`, `version` (pin to hub tag),
-   and `enable_docker_metrics: true` on the Docker host
+3. Per-node Hiera: `hub_url` (`https://beszel-agent.<DOCKER_DOMAIN>` on every
+   host), `system_name`, `version` (pin to hub tag), and
+   `enable_docker_metrics: true` on the Docker host only
 4. Puppet installs `/usr/local/bin/beszel-agent`, writes
    `/etc/beszel-agent/{key,token}`, and enables `beszel-agent.service`
    as FreeIPA `beszel`
 
-Same-host example is in `data/nodes/docker.yaml`. Remotes
-(`forbearance`, `proxmox`) get the same class with a public/internal
-`HUB_URL` once P1-04 is settled.
+Same-host and remotes share the agent hostname. UI stays on `beszel.<DOCKER_DOMAIN>`.
 
 ## Security baseline
 

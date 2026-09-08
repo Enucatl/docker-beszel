@@ -60,9 +60,14 @@ flowchart LR
   model as CheckMK: host-installed agent + systemd, not a privileged container.
   Agent runs as FreeIPA user `beszel` (`nologin`, via `freeipa_users` on docker;
   SSSD on all hosts). Not root, not `user_l`, and not `get.beszel.dev` (that would
-  create a conflicting local user). Same-host agent uses
-  `HUB_URL=http://127.0.0.1:8090` (hub loopback publish); remotes use
-  `HUB_URL=https://beszel.${DOCKER_DOMAIN}` (resolve Authelia under P1-04).
+  create a conflicting local user).
+- **Uniform agent→hub path:** every host (including `docker.home.arpa`) uses
+  `HUB_URL=https://beszel-agent.${DOCKER_DOMAIN}`. No special-case loopback publish.
+- **Front door split:**
+  - UI: `https://beszel.${DOCKER_DOMAIN}` — Authelia + `secured@file` (LAN allowlist)
+  - Agents: `https://beszel-agent.${DOCKER_DOMAIN}` — **no Authelia**; Traefik routes
+    only `PathPrefix(/api/beszel/agent-connect)`; still behind `secured@file` (LAN
+    allowlist). App-level auth is Beszel KEY/TOKEN + mutual handshake/fingerprint.
 - **Docker container stats** on `docker.home.arpa`: bare-metal agent uses the host
   Docker socket directly (`unix:///var/run/docker.sock`). FreeIPA `beszel` is in the
   local `docker` group on that host only. A compose socket-proxy is for container
@@ -123,9 +128,10 @@ flowchart LR
 - The docker-host binary agent uses the host Docker socket via the `docker` group
   (same privilege class as other host docker clients; not root). Traefik’s
   socket-proxy remains for container consumers only.
-- Agents need a reachable `HUB_URL`. Authelia on the public hostname may require
-  a split agent path or loopback/internal URL — record the tested outcome in the
-  ledger (local: loopback; remotes: P1-04).
+- Agents need a reachable `HUB_URL`. UI hostname stays behind Authelia; agents use
+  dedicated `beszel-agent.${DOCKER_DOMAIN}` (path-limited, LAN allowlist, Beszel
+  token/key auth). Exposing agent-connect without Authelia means a stolen universal
+  token can enroll agents from the LAN — protect the token like a credential.
 - No metric history migration from CheckMK RRDs.
 
 ## Success criteria

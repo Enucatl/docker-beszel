@@ -7,9 +7,6 @@ services:
     cpu_shares: 128
     environment:
       APP_URL: https://beszel.${DOCKER_DOMAIN}
-    # Loopback publish for same-host binary agent HUB_URL (bypasses Traefik/Authelia).
-    ports:
-      - "127.0.0.1:8090:8090"
     expose:
       - "8090"
     volumes:
@@ -21,11 +18,19 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik_proxy"
+      # Human UI — Authelia + LAN allowlist
       - "traefik.http.routers.beszel.rule=Host(`beszel.${DOCKER_DOMAIN}`)"
       - "traefik.http.routers.beszel.entrypoints=https"
       - "traefik.http.routers.beszel.tls=true"
       - "traefik.http.routers.beszel.middlewares=authelia@docker,secured@file"
       - "traefik.http.routers.beszel.service=beszel"
+      # Agents (all hosts, including docker) — no Authelia; path-limited; LAN allowlist only
+      - "traefik.http.routers.beszel-agent.rule=Host(`beszel-agent.${DOCKER_DOMAIN}`) && PathPrefix(`/api/beszel/agent-connect`)"
+      - "traefik.http.routers.beszel-agent.entrypoints=https"
+      - "traefik.http.routers.beszel-agent.tls=true"
+      - "traefik.http.routers.beszel-agent.priority=100"
+      - "traefik.http.routers.beszel-agent.middlewares=secured@file"
+      - "traefik.http.routers.beszel-agent.service=beszel"
       - "traefik.http.services.beszel.loadbalancer.server.port=8090"
 
 volumes:
