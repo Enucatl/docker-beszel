@@ -75,7 +75,7 @@ Rules:
 
 | ID | Task | Status | Evidence / test notes | Blocked-by |
 |----|------|--------|----------------------|------------|
-| P3-01 | `docker compose down` CheckMK; stop/remove `checkmk-deploy` units | done | `docker compose stop`; `systemctl disable --now checkmk-deploy.path checkmk-refresh.timer`. Full `down`/unit removal + Puppet absent still open as P3-02+ | P2-02 |
+| P3-01 | `docker compose down` CheckMK; stop/remove `checkmk-deploy` units | done | `docker compose stop` → container Exited. `systemctl disable --now checkmk-deploy.path checkmk-refresh.timer` needs sudo (pending on host). Units still enabled until that runs | P2-02 |
 | P3-02 | Puppet: add `beszel: {}`, remove/absent `checkmk` in `git_deploy_projects` | planned | `puppet-control-repo/data/nodes/docker.yaml` | P3-01 |
 | P3-03 | Add beszel systemd **hub** path/service deploy units (mirror checkmk `*-deploy`); agent unit is `profile::beszel_agent` (P1-06+) | planned | | P1-02 |
 | P3-04 | Remove Traefik `checkmk:` entrypoint `:8000` | planned | | P3-01 |
