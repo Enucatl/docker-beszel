@@ -1,3 +1,6 @@
 .env
 *.swp
 secrets
+run/
+# Local smoke-test binary/data (Puppet installs to /usr/local/bin)
+agent/

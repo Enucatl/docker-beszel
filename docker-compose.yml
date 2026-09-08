@@ -7,15 +7,13 @@ services:
     cpu_shares: 128
     environment:
       APP_URL: https://beszel.${DOCKER_DOMAIN}
-    # Loopback-only publish so the host-network agent can reach the hub without
-    # Traefik/Authelia (public UI is via traefik_proxy labels below).
+    # Loopback publish for same-host binary agent HUB_URL (bypasses Traefik/Authelia).
     ports:
       - "127.0.0.1:8090:8090"
     expose:
       - "8090"
     volumes:
       - beszel_data:/beszel_data
-      - beszel_socket:/beszel_socket
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=64m
     networks:
@@ -30,32 +28,8 @@ services:
       - "traefik.http.routers.beszel.service=beszel"
       - "traefik.http.services.beszel.loadbalancer.server.port=8090"
 
-  beszel-agent:
-    extends:
-      file: ../compose-security-baseline/hardening.yml
-      service: hardened-tiny
-    image: henrygd/beszel-agent:0.19.0
-    cpu_shares: 128
-    network_mode: host
-    volumes:
-      - beszel_agent_data:/var/lib/beszel-agent
-      - beszel_socket:/beszel_socket
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    tmpfs:
-      - /tmp:rw,noexec,nosuid,size=32m
-    environment:
-      LISTEN: /beszel_socket/beszel.sock
-      HUB_URL: http://127.0.0.1:8090
-      # Filled after hub admin + "Add system" (see P1-05 / P1-06).
-      TOKEN: ${BESZEL_AGENT_TOKEN:-}
-      KEY: ${BESZEL_AGENT_KEY:-}
-    depends_on:
-      - beszel
-
 volumes:
   beszel_data:
-  beszel_socket:
-  beszel_agent_data:
 
 networks:
   traefik_proxy:

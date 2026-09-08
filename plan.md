@@ -40,9 +40,9 @@ flowchart LR
   hub[Beszel hub]
   ui[Traefik plus Authelia]
   tg[Telegram via Shoutrrr]
-  dockerHost -->|agent plus docker.sock| hub
-  forbearance -->|agent| hub
-  proxmox -->|agent| hub
+  dockerHost -->|binary agent plus docker.sock| hub
+  forbearance -->|binary agent| hub
+  proxmox -->|binary agent| hub
   ui --> hub
   hub --> tg
 ```
@@ -51,15 +51,28 @@ flowchart LR
 
 - **New project:** `/opt/docker/beszel` (do not repurpose the checkmk git remote).
 - Mirror peer stack conventions (`checkmk`, `grafana-loki`):
-  - Extend `compose-security-baseline` with a small/medium hardened profile.
+  - Use `compose-security-baseline` hardened profiles (`hardened-small` for hub).
   - Traefik: `beszel.${DOCKER_DOMAIN}`, HTTPS, Authelia + `secured@file`.
   - External network `traefik_proxy`.
   - Pin image tags (not `:latest`) once a known-good release is chosen.
-- **Hub + local agent** on `docker.home.arpa`: unix socket between hub and agent; agent mounts `/var/run/docker.sock:ro`.
-- **Remote agents** on `forbearance` and `proxmox`: binary or Docker agent; `HUB_URL=https://beszel.${DOCKER_DOMAIN}`, hub `KEY`, registration `TOKEN`.
+- **Hub only in Compose** on `docker.home.arpa` (no compose agent or socket-proxy).
+- **Binary agents on all three hosts** (`docker`, `forbearance`, `proxmox`) — same
+  model as CheckMK: host-installed agent + systemd, not a privileged container.
+  Agent runs as FreeIPA user `beszel` (`nologin`, via `freeipa_users` on docker;
+  SSSD on all hosts). Not root, not `user_l`, and not `get.beszel.dev` (that would
+  create a conflicting local user). Same-host agent uses
+  `HUB_URL=http://127.0.0.1:8090` (hub loopback publish); remotes use
+  `HUB_URL=https://beszel.${DOCKER_DOMAIN}` (resolve Authelia under P1-04).
+- **Docker container stats** on `docker.home.arpa`: bare-metal agent uses the host
+  Docker socket directly (`unix:///var/run/docker.sock`). FreeIPA `beszel` is in the
+  local `docker` group on that host only. A compose socket-proxy is for container
+  consumers (Traefik); it is unnecessary for a host agent.
 - **Auth:** local admin first; optional Authelia OIDC later (Grafana already uses Authelia OIDC).
 - **Alerts:** Shoutrrr Telegram URL in Beszel settings (reuse existing bot/chat where possible).
-- **Puppet:** add `beszel: {}` under `profile::docker_host::git_deploy_projects` in `puppet-control-repo/data/nodes/docker.yaml`; matching systemd deploy units (same pattern as checkmk).
+- **Puppet:** `profile::beszel_agent` installs the pinned binary and
+  `beszel-agent.service` (User=`beszel`); KEY/TOKEN in Vault. Later add
+  `beszel: {}` under `git_deploy_projects` for hub compose deploy (same pattern as
+  checkmk).
 
 ## Phases
 
@@ -68,14 +81,15 @@ flowchart LR
 1. Create `/opt/docker/beszel/`.
 2. Write this `plan.md`.
 3. Write `implementation_ledger.md` seeded with tasks.
-4. **Stop here.** Bootstrap scope is only the directory scaffold and these markdown files. All Phase 1+ implementation is resumed **from inside `/opt/docker/beszel`**, driven by the ledger (next after P1-01: **P1-02**).
+4. **Stop here for bootstrap.** Scaffold + these markdown files only. Phase 1+ is driven by the ledger (currently next: **P1-06**).
 
 ### Phase 1 — Stand up Beszel (parallel with CheckMK)
 
-1. Hub (+ local agent) compose, Traefik route, data volume, README.
-2. Admin user; register `docker.home.arpa`; confirm host + container metrics.
-3. Agents on `forbearance` and `proxmox`; confirm green systems.
-4. Telegram + conservative alerts; parallel-run vs CheckMK.
+1. Hub compose + Traefik route; admin user.
+2. FreeIPA `beszel` user + `profile::beszel_agent` on `docker`, `forbearance`,
+   `proxmox`; confirm green systems + containers on docker host (agent uses host
+   `docker.sock` as `beszel` in the `docker` group).
+3. Telegram + conservative alerts; parallel-run vs CheckMK.
 
 ### Phase 2 — Cut over
 
@@ -101,11 +115,17 @@ flowchart LR
 - No SSL certificate service checks.
 - No CheckMK → Beszel history/config import.
 - No CheckMK Ultimate license or agent bakery.
+- No compose agent sidecar and no Beszel-owned Docker socket-proxy (host agent uses the real socket; Traefik’s proxy stays Traefik-only).
+- No `get.beszel.dev` / local `beszel` system user — FreeIPA owns the identity.
 
 ## Risks
 
-- Docker socket on the agent is a privilege boundary (read-only mount ≠ safe Docker API); acceptable for this homelab docker host.
-- Agents need a reachable `HUB_URL`. Authelia on the same hostname may require a split agent path (like CheckMK’s API router) or an internal URL — record the tested outcome in the ledger.
+- The docker-host binary agent uses the host Docker socket via the `docker` group
+  (same privilege class as other host docker clients; not root). Traefik’s
+  socket-proxy remains for container consumers only.
+- Agents need a reachable `HUB_URL`. Authelia on the public hostname may require
+  a split agent path or loopback/internal URL — record the tested outcome in the
+  ledger (local: loopback; remotes: P1-04).
 - No metric history migration from CheckMK RRDs.
 
 ## Success criteria
