@@ -25,6 +25,23 @@ Working docs:
   on all hosts; Temperature 70°C / 5m on proxmox + proxmox-cortex;
   ContainerHealth on docker (Docker unhealthy status)
 
+## Resource footprint
+
+Measured 2026-09-08 (RSS / container stats), five agents + hub:
+
+| Component | RAM |
+|-----------|-----|
+| Hub (`beszel` container) | ~18 MiB (capped at 256 MiB) |
+| Agent `docker` | ~16 MiB |
+| Agent `forbearance` | ~14 MiB |
+| Agent `proxmox` | ~15 MiB |
+| Agent `proxmox-cortex` | ~15 MiB |
+| Agent `complex` | ~15 MiB |
+| **Beszel total** | **~92 MiB** |
+
+CheckMK (Ultimate site on docker) was using around **2 GiB** for the same
+homelab monitoring job.
+
 ## Deployment
 
 Copy `.env.example` to `.env` (or keep the project `.env` that sets
