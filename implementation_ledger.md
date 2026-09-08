@@ -11,7 +11,8 @@
 **v1 target (authoritative with [plan.md](./plan.md)):**
 
 - Compose runs **hub only** (`henrygd/beszel:0.19.0`, Traefik + Authelia).
-- **Binary agents** on `docker`, `forbearance`, and `proxmox` via Puppet
+- **Binary agents** on all Debian hosts (`docker`, `forbearance`, `proxmox`,
+  `proxmox-cortex`, `complex`) via Puppet `os/Debian.yaml` →
   `profile::beszel_agent` + systemd (not compose sidecars; not ad-hoc `systemctl`).
 - Agent identity: FreeIPA user **`beszel`** (`nologin`, `freeipa_users` on docker;
   SSSD everywhere). Not root / not `user_l` / not `get.beszel.dev`.
@@ -110,6 +111,8 @@ Rules:
 | 2026-09-07 | Agent install/systemd only via puppet-control-repo (`profile::beszel_agent`); no ad-hoc host `systemctl`. KEY/TOKEN in Vault. |
 | 2026-09-08 | Agent runs as FreeIPA `beszel` (`nologin` via `freeipa_users`); docker group only on docker host. Not root / not `user_l` / not `get.beszel.dev`. |
 | 2026-09-08 | No Status (host-down) alert on `forbearance` — intermittent downtime is expected. |
+| 2026-09-08 | Same for `proxmox-cortex` / `complex` (powered down often). Temperature alert on both Proxmox hosts. |
+| 2026-09-08 | `profile::beszel_agent` lives in `os/Debian.yaml` (not per-node). |
 | 2026-09-08 | Beszel UI auth = Authelia OIDC (like Grafana); not Traefik forward-auth. FreeIPA `user@home.arpa` is the hub admin. |
 
 ---
@@ -135,3 +138,4 @@ Rules:
 | 2026-09-08 | OIDC fix: Authelia `consent_mode: implicit`; hub mounts host CA + `SSL_CERT_FILE` for Authelia HTTPS. |
 | 2026-09-08 | Cutover: CheckMK stopped; P1-11 cancelled; P2-01/P2-02/P3-01 done. Next **P3-02** (Puppet absent checkmk / add beszel deploy). |
 | 2026-09-08 | P3-02 done: Puppet CheckMK residuals removed; beszel git_deploy added. Next **P3-03**. |
+| 2026-09-08 | Enrolled `proxmox-cortex` + `complex`; moved agent class to `os/Debian.yaml` (`bc5bd0f`). |

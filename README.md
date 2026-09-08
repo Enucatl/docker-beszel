@@ -12,16 +12,18 @@ Working docs:
 
 - **Beszel hub** (`henrygd/beszel:0.19.0`) — UI, history, alerts; Traefik
   `beszel.${DOCKER_DOMAIN}` + `secured@file` + Authelia OIDC (Grafana-style SSO)
-- **Binary agents** on all monitored hosts (`docker`, `forbearance`, `proxmox`) —
-  Puppet `profile::beszel_agent` + systemd as FreeIPA user `beszel` (`nologin`).
+- **Binary agents** on all Debian hosts via Puppet `os/Debian.yaml`
+  (`profile::beszel_agent` + systemd as FreeIPA user `beszel` / `nologin`).
+  Fleet: `docker`, `forbearance`, `proxmox`, `proxmox-cortex`, `complex`.
   On `docker.home.arpa` the agent is in the local `docker` group and reads
   `/var/run/docker.sock` directly (no compose socket-proxy; Traefik’s proxy is
   for containers, not bare-metal agents)
 - **Alerts** — Telegram via Shoutrrr (same CheckMK bot/chat; URL in
   `secrets/beszel_telegram_shoutrrr` and hub Settings → Notifications).
-  Rules: Status (down) on docker+proxmox only (not forbearance); CPU 90% /
-  10m; Memory 95% / 10m; Disk 95% / 5m on all hosts; Temperature 70°C / 5m on
-  proxmox; ContainerHealth on docker (Docker unhealthy status)
+  Rules: Status (down) on docker+proxmox only (not forbearance /
+  proxmox-cortex / complex); CPU 90% / 10m; Memory 95% / 10m; Disk 95% / 5m
+  on all hosts; Temperature 70°C / 5m on proxmox + proxmox-cortex;
+  ContainerHealth on docker (Docker unhealthy status)
 
 ## Deployment
 
@@ -53,9 +55,8 @@ conflicts with FreeIPA). Use `profile::beszel_agent` in
    `freeipa_users::user_groups` adds `beszel` to `docker`.
 2. Hub KEY + universal TOKEN → Vault `kv/puppet` as
    `profile::beszel_agent::key` / `profile::beszel_agent::token`
-3. Per-node Hiera: `hub_url` (`https://beszel-agent.<DOCKER_DOMAIN>` on every
-   host), `system_name`, `version` (pin to hub tag), and
-   `enable_docker_metrics: true` on the Docker host only
+3. Hiera: class in `os/Debian.yaml`; shared `hub_url` / `version` / `user` in
+   `common.yaml`; `enable_docker_metrics: true` on the Docker host only
 4. Puppet installs `/usr/local/bin/beszel-agent`, writes
    `/etc/beszel-agent/{key,token}`, and enables `beszel-agent.service`
    as FreeIPA `beszel`

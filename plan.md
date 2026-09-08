@@ -36,6 +36,8 @@ flowchart LR
     dockerHost[docker.home.arpa]
     forbearance[forbearance.home.arpa]
     proxmox[proxmox.home.arpa]
+    cortex[proxmox-cortex.home.arpa]
+    complex[complex.home.arpa]
   end
   hub[Beszel hub]
   ui[Traefik plus Authelia]
@@ -43,6 +45,8 @@ flowchart LR
   dockerHost -->|binary agent plus docker.sock| hub
   forbearance -->|binary agent| hub
   proxmox -->|binary agent| hub
+  cortex -->|binary agent| hub
+  complex -->|binary agent| hub
   ui --> hub
   hub --> tg
 ```
@@ -56,11 +60,12 @@ flowchart LR
   - External network `traefik_proxy`.
   - Pin image tags (not `:latest`) once a known-good release is chosen.
 - **Hub only in Compose** on `docker.home.arpa` (no compose agent or socket-proxy).
-- **Binary agents on all three hosts** (`docker`, `forbearance`, `proxmox`) — same
-  model as CheckMK: host-installed agent + systemd, not a privileged container.
-  Agent runs as FreeIPA user `beszel` (`nologin`, via `freeipa_users` on docker;
-  SSSD on all hosts). Not root, not `user_l`, and not `get.beszel.dev` (that would
-  create a conflicting local user).
+- **Binary agents on all Debian hosts** (`docker`, `forbearance`, `proxmox`,
+  `proxmox-cortex`, `complex`) via Hiera `os/Debian.yaml` — same model as CheckMK:
+  host-installed agent + systemd, not a privileged container. Agent runs as
+  FreeIPA user `beszel` (`nologin`, via `freeipa_users` on docker; SSSD on all
+  hosts). Not root, not `user_l`, and not `get.beszel.dev` (that would create a
+  conflicting local user).
 - **Uniform agent→hub path:** every host (including `docker.home.arpa`) uses
   `HUB_URL=https://beszel-agent.${DOCKER_DOMAIN}`. No special-case loopback publish.
 - **Front door split:**
