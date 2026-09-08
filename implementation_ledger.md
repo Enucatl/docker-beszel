@@ -6,7 +6,7 @@
 | Plan | [plan.md](./plan.md) |
 | Last updated | 2026-09-08 |
 | Status legend | `planned` · `in_progress` · `done` · `blocked` · `cancelled` |
-| Next pick-up | **P1-07** |
+| Next pick-up | **P1-08** |
 
 **v1 target (authoritative with [plan.md](./plan.md)):**
 
@@ -52,8 +52,8 @@ Rules:
 | P1-04 | Dedicated agent hostname (no Authelia); all hosts use same `HUB_URL` | done | UI `beszel.docker.home.arpa` + Authelia; agents `beszel-agent.docker.home.arpa` + `/api/beszel/agent-connect` + `secured@file`. Compose redeployed (no loopback publish). Probes: UI 403, agent-connect 400 from hub. Puppet `hub_url` uniform | |
 | P1-05 | Bring stack up; create admin user; UI reachable via Traefik | done | Hub Up; admin `admin@docker.home.arpa` (`secrets/beszel_admin_password`). Health 200 loopback + `traefik_proxy`; public HTTPS → 403 Authelia (same as checkmk without session) | P1-03 |
 | P1-06 | Puppet: FreeIPA `beszel` + `profile::beszel_agent` on `docker.home.arpa`; host + container metrics green under systemd | done | `puppet agent -t` applied `2de92bf`. `beszel-agent.service` **active** as User=`beszel` (groups `beszel,docker`). Health `ok`. Hub: `docker.home.arpa` **up** v0.19.0; **48** containers. Smoke nohup agent stopped | P1-05 |
-| P1-07 | Puppet: `profile::beszel_agent` on `forbearance.home.arpa` as FreeIPA `beszel`; system green | in_progress | Hiera in `a14ee60` (`forbearance.yaml` + shared `hub_url`). FreeIPA `beszel` resolves on forbearance; service not yet installed — needs `sudo puppet agent -t` there. Docker also needs apply to switch off loopback `HUB_URL` | P1-04 |
-| P1-08 | Puppet: `profile::beszel_agent` on `proxmox.home.arpa` as FreeIPA `beszel`; system green | planned | Same as P1-07 | P1-04 |
+| P1-07 | Puppet: `profile::beszel_agent` on `forbearance.home.arpa` as FreeIPA `beszel`; system green | done | After token refresh + Puppet re-apply: `forbearance.home.arpa` **up** v0.19.0. Both agents use `https://beszel-agent.docker.home.arpa`. Removed stale duplicate `docker.home.arpa` (down) | P1-04 |
+| P1-08 | Puppet: `profile::beszel_agent` on `proxmox.home.arpa` as FreeIPA `beszel`; system green | in_progress | Class added to `data/nodes/proxmox.yaml`; await Puppet apply | P1-04 |
 | P1-09 | Shoutrrr Telegram URL; test notification | planned | Reuse CheckMK bot/chat if available | P1-05 |
 | P1-10 | Conservative alerts (host down, high CPU/mem/disk) | planned | Prefer less noise than CheckMK SSL/label churn | P1-09 |
 | P1-11 | Parallel-run soak vs CheckMK; note gaps | planned | | P1-06, P1-07, P1-08, P1-10 |
@@ -124,3 +124,4 @@ Rules:
 | 2026-09-08 | Identity: FreeIPA `beszel`; plan/ledger/README + P1-06/07/08 aligned; Puppet Hiera/user_groups updated. |
 | 2026-09-08 | P1-06 done: systemd agent on docker as `beszel`; hub green with containers. |
 | 2026-09-08 | P1-04 done: agent hostname split; uniform HUB_URL. Next **P1-07**. |
+| 2026-09-08 | P1-07 done (forbearance up). P1-08 proxmox in progress. |
