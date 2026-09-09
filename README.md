@@ -22,7 +22,7 @@ Working docs:
   `secrets/beszel_telegram_shoutrrr` and hub Settings → Notifications).
   Rules: Status (down) on docker+proxmox only (not forbearance /
   proxmox-cortex / complex); CPU 90% / 10m; Memory 95% / 10m; Disk 95% / 5m
-  on all hosts; Temperature 70°C / 5m on proxmox + proxmox-cortex;
+  on all hosts; Temperature 80°C / 5m on proxmox + proxmox-cortex;
   ContainerHealth on docker (Docker unhealthy status)
 
 ## Resource footprint
