@@ -1,0 +1,19 @@
+[build-system]
+requires = ["uv_build>=0.12.12,<0.13"]
+build-backend = "uv_build"
+
+[project]
+name = "beszel-alerts"
+version = "0.1.0"
+description = "Reconcile Beszel alerts from a YAML definition"
+requires-python = ">=3.14"
+dependencies = [
+    "PyYAML==6.0.2",
+]
+
+[project.scripts]
+alerts-init = "alerts.reconcile:main"
+
+[tool.uv.build-backend]
+module-root = ""
+module-name = "alerts"

@@ -1,11 +1,11 @@
-FROM python:3.14-slim
+FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 WORKDIR /app
-COPY alerts/requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir --requirement /app/requirements.txt
-COPY alerts/reconcile.py /app/reconcile.py
+COPY pyproject.toml /app/pyproject.toml
+COPY alerts /app/alerts
+RUN uv sync --no-dev
 
-ENTRYPOINT ["python", "/app/reconcile.py"]
+ENTRYPOINT ["/app/.venv/bin/alerts-init"]
