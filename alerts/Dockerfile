@@ -5,7 +5,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 COPY pyproject.toml /app/pyproject.toml
-COPY alerts /app/alerts
+COPY src /app/src
 RUN uv sync --no-dev
 
 ENTRYPOINT ["/app/.venv/bin/alerts-init"]

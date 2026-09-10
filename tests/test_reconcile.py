@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from alerts.reconcile import (
+from beszel_alerts.reconcile import (
     AlertDefinition,
     BeszelAPI,
     Definition,
@@ -115,7 +115,7 @@ def test_api_request_sends_auth_token() -> None:
     response.read.return_value = b"{}"
     response.__enter__.return_value = response
 
-    with patch("alerts.reconcile.urlopen", return_value=response) as urlopen:
+    with patch("beszel_alerts.reconcile.urlopen", return_value=response) as urlopen:
         api.request("GET", "/api/test")
 
     request = urlopen.call_args.args[0]

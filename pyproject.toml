@@ -12,8 +12,4 @@ dependencies = [
 ]
 
 [project.scripts]
-alerts-init = "alerts.reconcile:main"
-
-[tool.uv.build-backend]
-module-root = ""
-module-name = "alerts"
+alerts-init = "beszel_alerts.reconcile:main"
