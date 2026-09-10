@@ -1,0 +1,35 @@
+# Beszel system inventory.
+#
+# Tokens are intentionally omitted. Beszel preserves the existing fingerprint
+# token when an existing system matches by name, host, and port. This file is
+# for normal persistent-volume redeploys, not fresh-database recovery.
+systems:
+  - name: complex.home.arpa
+    host: 10.0.40.133
+    port: 45876
+    users:
+      - user@home.arpa
+
+  - name: docker.home.arpa
+    host: 172.17.96.1
+    port: 45876
+    users:
+      - user@home.arpa
+
+  - name: forbearance.home.arpa
+    host: 10.0.0.136
+    port: 45876
+    users:
+      - user@home.arpa
+
+  - name: proxmox-cortex.home.arpa
+    host: 10.0.40.2
+    port: 45876
+    users:
+      - user@home.arpa
+
+  - name: proxmox.home.arpa
+    host: 10.0.0.10
+    port: 45876
+    users:
+      - user@home.arpa

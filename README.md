@@ -48,8 +48,21 @@ Copy `.env.example` to `.env` (or keep the project `.env` that sets
 `COMPOSE_ENV_FILES=../.env` so `DOCKER_DOMAIN` comes from `/opt/docker/.env`).
 
 ```sh
-docker compose up -d
+docker compose up -d --wait beszel
+docker compose run --rm alerts-init
 ```
+
+The tracked [config.yml](./config.yml) is Beszel's native startup configuration
+for the complete system inventory. It intentionally omits agent tokens so
+normal redeploys preserve the existing fingerprint records in `beszel_data`.
+It is not a fresh-database recovery file; do not remove systems from it unless
+they should be removed from Beszel.
+
+The tracked [alerts.yml](./alerts.yml) is the exact alert policy. The one-shot
+`alerts-init` service applies it through Beszel's API after the hub is healthy,
+including removing managed alerts that are absent from the file. It uses the
+gitignored `secrets/beszel_admin_password` only at deployment time and exits
+after reconciliation.
 
 - Public UI: `https://beszel.<DOCKER_DOMAIN>` (LAN allowlist + Authelia OIDC SSO)
 - Agent `HUB_URL` (all hosts): `https://beszel-agent.<DOCKER_DOMAIN>`

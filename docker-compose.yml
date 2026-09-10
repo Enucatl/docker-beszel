@@ -20,12 +20,15 @@ services:
       start_period: 10s
     volumes:
       - beszel_data:/beszel_data
+      # Native Beszel system inventory. Tokens remain in the persistent DB.
+      - ./config.yml:/beszel_data/config.yml:ro
       # Trust FreeIPA/homelab CA so hub can call Authelia OIDC token/userinfo over HTTPS
       - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=64m
     networks:
       - traefik_proxy
+      - beszel_internal
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik_proxy"
@@ -44,9 +47,41 @@ services:
       - "traefik.http.routers.beszel-agent.service=beszel"
       - "traefik.http.services.beszel.loadbalancer.server.port=8090"
 
+  alerts-init:
+    build:
+      context: .
+      dockerfile: alerts/Dockerfile
+    extends:
+      file: ../compose-security-baseline/hardening.yml
+      service: hardened-tiny
+    user: "1000:1000"
+    restart: "no"
+    depends_on:
+      beszel:
+        condition: service_healthy
+    environment:
+      BESZEL_URL: http://beszel:8090
+      BESZEL_ADMIN_EMAIL: admin@docker.home.arpa
+      BESZEL_ADMIN_PASSWORD_FILE: /run/secrets/beszel_admin_password
+      ALERTS_CONFIG: /app/alerts.yml
+    secrets:
+      - beszel_admin_password
+    volumes:
+      - ./alerts.yml:/app/alerts.yml:ro
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    networks:
+      - beszel_internal
+
 volumes:
   beszel_data:
 
 networks:
   traefik_proxy:
     external: true
+  beszel_internal:
+    internal: true
+
+secrets:
+  beszel_admin_password:
+    file: secrets/beszel_admin_password
