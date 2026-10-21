@@ -1,9 +1,4 @@
 systems:
-- name: forbearance.home.arpa
-  host: 10.0.0.136
-  port: 45876
-  users:
-  - user@home.arpa
 - name: proxmox.home.arpa
   host: 10.0.0.10
   port: 45876
@@ -14,18 +9,8 @@ systems:
   port: 45876
   users:
   - user@home.arpa
-- name: complex.home.arpa
-  host: 10.0.40.133
-  port: 45876
-  users:
-  - user@home.arpa
 - name: atlas.home.arpa
-  host: atlas.home.arpa
-  port: 45876
-  users:
-  - user@home.arpa
-- name: aperture.home.arpa (retired provisioning)
-  host: 10.0.0.106
+  host: 10.0.0.158
   port: 45876
   users:
   - user@home.arpa
