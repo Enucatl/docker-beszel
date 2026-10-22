@@ -1,15 +1,5 @@
 user: user@home.arpa
 systems:
-  cognition.home.arpa:
-    CPU:
-      threshold: 90
-      minutes: 10
-    Memory:
-      threshold: 95
-      minutes: 10
-    Disk:
-      threshold: 85
-      minutes: 5
   atlas.home.arpa:
     Status:
       threshold: 0

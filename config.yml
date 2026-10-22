@@ -19,8 +19,3 @@ systems:
   port: 45876
   users:
   - user@home.arpa
-- name: cognition.home.arpa
-  host: cognition.home.arpa
-  port: 45876
-  users:
-  - user@home.arpa
